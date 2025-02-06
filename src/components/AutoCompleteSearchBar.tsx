@@ -1,15 +1,14 @@
 import { Box, Grid, InputAdornment, TextField } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
-import { useGetProductsList } from "../hooks/useGetDataAPI";
 import { Product } from "./types";
 import SuggestionsMenu from "./SuggestionsMenu";
+import { useAutoCompleteContext } from "../providers/AutoCompleteProvider";
 
 const AutoCompleteSearchBar = () => {
-    const { data: productsList, isLoading } = useGetProductsList();
+    const { productsList, isLoading, hoveredIndex, setHoveredIndex, updateHoverIndex } = useAutoCompleteContext();
     const [searchedProducts, setSearchedProducts] = useState<Product[]>([]);
     const [searchedText, setSearchedText] = useState<string>('');
-    const [hoveredIndex, setHoveredIndex] = useState(-1);
 
     const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
         setSearchedText(event.target.value);
@@ -22,6 +21,7 @@ const AutoCompleteSearchBar = () => {
                 setSearchedProducts(filteredProducts);
                 console.log('filteredProducts', filteredProducts);
                 setHoveredIndex(-1);
+                console.log("Called");
             }
         }, 250);
 
@@ -29,16 +29,7 @@ const AutoCompleteSearchBar = () => {
     }, [searchedText, productsList]);
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-        if(event.key === 'ArrowDown') {
-            setHoveredIndex(prevIndex => (
-                 prevIndex===searchedProducts.length-1 ? -1 : prevIndex+1
-            ));
-        } else if(event.key === 'ArrowUp') {
-            setHoveredIndex(prevIndex => (
-                prevIndex===-1 ? searchedProducts.length-1 : prevIndex-1
-            ));
-        }
-        console.log(hoveredIndex);
+        updateHoverIndex(event.key, searchedProducts.length);
     };
 
     return (
